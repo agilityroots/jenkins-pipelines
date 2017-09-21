@@ -11,7 +11,7 @@ The Jenkinsfile proceeds through various stages of the build pipeline:
 node('master') {
   //load common groovy script
   //http://stackoverflow.com/a/38108449/682912
-  def common = load "${env.WORKSPACE}@script/jenkins/job-config/common.groovy"
+  def common = load "${env.WORKSPACE}@script/libraries/common.groovy"
   def dockerfileLoc = "${env.WORKSPACE}@script/docker/petclinic/"
   def tempDir = pwd(tmp: true)
 
