@@ -4,12 +4,14 @@ node('master') {
   def common = load "${env.WORKSPACE}@script/libraries/common.groovy"
 
   stage('Build Petclinic') {
-    common.checkoutGit("https://github.com/savishy/spring-petclinic")
-    common.buildWar("/usr/lib/jvm/java-1.8.0-openjdk-amd64","./mvnw install")
-    archiveArtifacts artifacts: "**/target/petclinic.war"
+    dir('appCode') {
+      common.checkoutGit("https://github.com/savishy/spring-petclinic")
+      common.buildWar("/usr/lib/jvm/java-1.8.0-openjdk-amd64","./mvnw install")
+      archiveArtifacts artifacts: "**/target/petclinic.war"
+    }
   }
 
-  stage('Provision Tomcat') {
+  stage('Provision Tomcat: Prerequisites') {
 
     dir('ansibleCode') {
       common.checkoutGit("https://github.com/agilityroots/deployment-automation")
@@ -17,7 +19,15 @@ node('master') {
     }
   }
 
+  stage('Provision Tomcat') {
+      dir('ansibleCode'){
+        ansiblePlaybook playbook: "petclinic-ansible/provision.yml"
+      }
+  }
+
   stage('Deploy to Tomcat') {
-    
+    dir('ansibleCode') {
+        ansiblePlaybook playbook: "petclinic-ansible/deploy.yml"
+    }
   }
 }
