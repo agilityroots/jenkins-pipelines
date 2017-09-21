@@ -1,0 +1,23 @@
+node('master') {
+  //load common groovy script
+  //http://stackoverflow.com/a/38108449/682912
+  def common = load "${env.WORKSPACE}@script/libraries/common.groovy"
+
+  stage('Build Petclinic') {
+    common.checkoutGit("https://github.com/savishy/spring-petclinic")
+    common.buildWar("/usr/lib/jvm/java-1.8.0-openjdk-amd64","./mvnw install")
+    archiveArtifacts artifacts: "**/target/petclinic.war"
+  }
+
+  stage('Provision Tomcat') {
+
+    dir('ansibleCode') {
+      common.checkoutGit("https://github.com/agilityroots/deployment-automation")
+      ansiblePlaybook playbook: "petclinic-ansible/prerequisites.yml"
+    }
+  }
+
+  stage('Deploy to Tomcat') {
+    
+  }
+}
